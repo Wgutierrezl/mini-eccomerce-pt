@@ -9,7 +9,7 @@ import Swal from "sweetalert2";
 //METHOD TO GET ALL PRODUCTS
 export async function GetAllProducts() : Promise<Product[] | void> {
     try{
-        const response=await api.get<Product[]>('/products');
+        const response=await api.get<Product[]>('/products/');
         console.log(response.data);
         return response.data;
 
@@ -29,7 +29,7 @@ export async function GetAllProducts() : Promise<Product[] | void> {
 //METHOD TO GET ALL CARTS SAVED
 export async function GetAllCartsSaved() : Promise<SavedCart[] | void> {
     try{
-        const response=await api.get<SavedCart[]>('/cart');
+        const response=await api.get<SavedCart[]>('/cart/');
         console.log(response.data);
         return response.data;
 
@@ -75,7 +75,7 @@ export async function DeleteSavedCardById(id:number) : Promise<boolean | void> {
 //METHOD TO SAVE A CART INTO OUR BD
 export async function SavedCartIntoBD(data:CartCreate) : Promise<boolean | void> {
     try{
-        const response=await api.post('/cart',data);
+        const response=await api.post('/cart/',data);
         console.log(response.data);
         if(response.status===200){
             return true;
