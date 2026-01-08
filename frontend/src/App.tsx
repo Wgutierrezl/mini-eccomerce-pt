@@ -15,7 +15,19 @@ export default function App() {
   const [products,setProducts]=useState<Product[]>();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [savedCarts, setSavedCarts] = useState<SavedCart[]>([]);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
   useEffect(()=> {
+
+    const storedCart = localStorage.getItem("cart");
+    if (storedCart) {
+      setCart(JSON.parse(storedCart));
+    }
     const fetchData=async()=> {
       try{
         const [productRes, savedCartRes]=await Promise.all([
@@ -36,9 +48,8 @@ export default function App() {
     fetchData();
   },[]);
 
+
   
-  
-  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const handleAddToCart = (product: Product) => {
     const existingItem = cart.find(item => item.id === product.id);
@@ -92,6 +103,7 @@ export default function App() {
       setSavedCarts(updatedCartSaved ?? []);
 
       setCart([]);
+      localStorage.removeItem("cart");
     
       // Mostrar mensaje de confirmación
       setShowConfirmation(true);
