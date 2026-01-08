@@ -1,12 +1,22 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
-from backend.database import SessionLocal, engine
-import backend.models as models
+from database import SessionLocal, engine
+import models as models
 from schemas import ProductCreate, CartCreate, CartResponse
+from fastapi.middleware.cors import CORSMiddleware
+
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # En producción se limita
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_db():
     db = SessionLocal()

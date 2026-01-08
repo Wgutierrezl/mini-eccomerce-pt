@@ -16,11 +16,19 @@ class CartCreate(BaseModel):
     items: List[CartItemCreate]
 
 
+class ProductResponse(BaseModel):
+    id: int
+    name: str
+    price: float
+
+    class Config:
+        orm_mode = True
+
 class CartItemResponse(BaseModel):
     id: int
-    product_id: int
     quantity: int
     price: float
+    product: ProductResponse
 
     class Config:
         orm_mode = True

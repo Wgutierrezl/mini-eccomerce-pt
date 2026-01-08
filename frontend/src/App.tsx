@@ -1,22 +1,51 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ProductList, type Product } from '../src/components/ProductList';
 import { ShoppingCart, type CartItem } from '../src/components/ShoppingCart';
 import { SavedCarts, type SavedCart } from '../src/components/SavedCarts';
 import { ConfirmationMessage } from '../src/components/ConfirmationMessage';
+import { GetAllProducts, 
+         GetAllCartsSaved, 
+         DeleteSavedCardById } from './functions/product.functions';
+
+import Swal from 'sweetalert2';
 
 export default function App() {
   // Mock de productos (simulando respuesta del backend)
-  const [products] = useState<Product[]>([
+  /* const [products] = useState<Product[]>([
     { id: 1, name: 'Laptop HP Pavilion', price: 899.99, stock: 15 },
     { id: 2, name: 'Mouse Logitech MX', price: 79.99, stock: 30 },
     { id: 3, name: 'Teclado Mecánico RGB', price: 129.99, stock: 20 },
     { id: 4, name: 'Monitor 27" 4K', price: 449.99, stock: 8 },
     { id: 5, name: 'Webcam HD 1080p', price: 59.99, stock: 25 },
     { id: 6, name: 'Auriculares Bluetooth', price: 149.99, stock: 0 },
-  ]);
+  ]); */
 
+  const [products,setProducts]=useState<Product[]>();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [savedCarts, setSavedCarts] = useState<SavedCart[]>([]);
+  useEffect(()=> {
+    const fetchData=async()=> {
+      try{
+        const [productRes, savedCartRes]=await Promise.all([
+          GetAllProducts(),
+          GetAllCartsSaved()
+        ]);
+
+        setProducts(productRes ?? []);
+        setSavedCarts(savedCartRes ?? []);
+
+      }catch(error:any){
+        Swal.fire('error',`ha ocurrido un error inesperado ${error.message}`,'error');
+        setProducts([]);
+        return ;
+
+      }
+    }
+    fetchData();
+  },[]);
+
+  
+  
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   const handleAddToCart = (product: Product) => {
@@ -31,9 +60,9 @@ export default function App() {
     } else {
       setCart([...cart, {
         id: product.id,
-        name: product.name,
         price: product.price,
         quantity: 1,
+        product: product
       }]);
     }
   };
@@ -72,8 +101,21 @@ export default function App() {
     setTimeout(() => setShowConfirmation(false), 3000);
   };
 
-  const handleDeleteCart = (id: number) => {
-    setSavedCarts(savedCarts.filter(cart => cart.id !== id));
+  const handleDeleteCart = async (id: number) => {
+    try{
+      const response=await DeleteSavedCardById(id);
+      if(!response){
+        Swal.fire('error','no hemos logrado borrar el carrito que se guardo','error');
+        return ;
+      }
+
+      setSavedCarts(savedCarts.filter(cart => cart.id !== id));
+
+    }catch(error:any){
+      Swal.fire('error',`ha ocurrido un error inesperado ${error.message}`,'error');
+      return ;
+    }
+    
   };
 
   return (
@@ -89,7 +131,7 @@ export default function App() {
           {/* Columna izquierda: Productos */}
           <div>
             <ProductList
-              products={products}
+              products={products ?? []}
               onAddToCart={handleAddToCart}
             />
             

@@ -1,10 +1,16 @@
 import { Trash2, Save } from 'lucide-react';
 
+export interface ProductResponse{
+    id: number;
+    name: string;
+    price: number
+}
+
 export interface CartItem {
   id: number;
-  name: string;
   price: number;
   quantity: number;
+  product : ProductResponse;
 }
 
 interface ShoppingCartProps {
@@ -32,7 +38,7 @@ export function ShoppingCart({ items, onUpdateQuantity, onRemoveItem, onSaveCart
                 className="border border-gray-200 rounded-lg p-4"
               >
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="text-lg flex-1">{item.name}</h3>
+                  <h3 className="text-lg flex-1">{item.product.name}</h3>
                   <button
                     onClick={() => onRemoveItem(item.id)}
                     className="text-red-500 hover:text-red-700 transition-colors"

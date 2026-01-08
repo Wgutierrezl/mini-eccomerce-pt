@@ -51,7 +51,7 @@ export function SavedCarts({ carts, onDeleteCart }: SavedCartsProps) {
                     className="flex justify-between items-center text-sm"
                   >
                     <div className="flex-1">
-                      <span>{item.name}</span>
+                      <span>{item.product.name}</span>
                       <span className="text-gray-500 ml-2">x{item.quantity}</span>
                     </div>
                     <span className="text-gray-700">
