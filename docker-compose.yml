@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: mini-ecommerce-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/ecommerce.db:/app/ecommerce.db
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: mini-ecommerce-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    restart: always
