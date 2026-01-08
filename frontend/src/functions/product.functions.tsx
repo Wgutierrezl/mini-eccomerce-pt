@@ -1,5 +1,6 @@
 import type { Product } from "../components/ProductList";
 import type { SavedCart } from "../components/SavedCarts";
+import type { CartCreate } from "../models/model";
 import api from "./ApiReutilizable";
 import Swal from "sweetalert2";
 
@@ -63,6 +64,29 @@ export async function DeleteSavedCardById(id:number) : Promise<boolean | void> {
         const statusCode=error.response.status;
         if(statusCode===404 || statusCode===400){
             Swal.fire('Informacion','aun no tienes carritos guardados','info');
+            return false;
+        }
+
+        throw error;
+    }
+    
+}
+
+//METHOD TO SAVE A CART INTO OUR BD
+export async function SavedCartIntoBD(data:CartCreate) : Promise<boolean | void> {
+    try{
+        const response=await api.post('/cart',data);
+        console.log(response.data);
+        if(response.status===200){
+            return true;
+        }
+
+        return false;
+
+    }catch(error:any){
+        const statusCode=error.response.status;
+        if(statusCode===404 || statusCode===400){
+            Swal.fire('Informacion','no hemos logrado guardar el carrito','info');
             return false;
         }
 

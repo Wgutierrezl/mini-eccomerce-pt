@@ -5,21 +5,13 @@ import { SavedCarts, type SavedCart } from '../src/components/SavedCarts';
 import { ConfirmationMessage } from '../src/components/ConfirmationMessage';
 import { GetAllProducts, 
          GetAllCartsSaved, 
-         DeleteSavedCardById } from './functions/product.functions';
+         DeleteSavedCardById,
+         SavedCartIntoBD } from './functions/product.functions';
 
 import Swal from 'sweetalert2';
+import type { CartCreate } from './models/model';
 
 export default function App() {
-  // Mock de productos (simulando respuesta del backend)
-  /* const [products] = useState<Product[]>([
-    { id: 1, name: 'Laptop HP Pavilion', price: 899.99, stock: 15 },
-    { id: 2, name: 'Mouse Logitech MX', price: 79.99, stock: 30 },
-    { id: 3, name: 'Teclado Mecánico RGB', price: 129.99, stock: 20 },
-    { id: 4, name: 'Monitor 27" 4K', price: 449.99, stock: 8 },
-    { id: 5, name: 'Webcam HD 1080p', price: 59.99, stock: 25 },
-    { id: 6, name: 'Auriculares Bluetooth', price: 149.99, stock: 0 },
-  ]); */
-
   const [products,setProducts]=useState<Product[]>();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [savedCarts, setSavedCarts] = useState<SavedCart[]>([]);
@@ -78,27 +70,39 @@ export default function App() {
     setCart(cart.filter(item => item.id !== id));
   };
 
-  const handleSaveCart = () => {
+  const handleSaveCart = async () => {
     if (cart.length === 0) return;
 
-    const newCart: SavedCart = {
-      id: savedCarts.length + 1,
-      items: [...cart],
-      savedAt: new Date().toLocaleString('es-ES', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
+    const payload: CartCreate = {
+      items: cart.map(item => ({
+                product_id: item.product.id,
+                quantity: item.quantity,
+                price: item.price
+              }))
     };
+    try{
+      const response=await SavedCartIntoBD(payload);
 
-    setSavedCarts([...savedCarts, newCart]);
-    setCart([]);
+      if(!response){
+        Swal.fire('error','no hemos logrado guardar el carrito','info');
+        return;
+      }
+
+      const updatedCartSaved=await GetAllCartsSaved();
+      setSavedCarts(updatedCartSaved ?? []);
+
+      setCart([]);
     
-    // Mostrar mensaje de confirmación
-    setShowConfirmation(true);
-    setTimeout(() => setShowConfirmation(false), 3000);
+      // Mostrar mensaje de confirmación
+      setShowConfirmation(true);
+      setTimeout(() => setShowConfirmation(false), 3000)
+
+
+    }catch(error:any){
+      Swal.fire('error',`ha ocurrido un error inesperado ${error.message}`,'error');
+      return;
+    }
+
   };
 
   const handleDeleteCart = async (id: number) => {
