@@ -3,19 +3,29 @@ import { ProductList, type Product } from '../src/components/ProductList';
 import { ShoppingCart, type CartItem } from '../src/components/ShoppingCart';
 import { SavedCarts, type SavedCart } from '../src/components/SavedCarts';
 import { ConfirmationMessage } from '../src/components/ConfirmationMessage';
+import { Login } from './components/Login';
+import { Register } from './components/Register';
 import { GetAllProducts, 
-         GetAllCartsSaved, 
+         GetAllMyCartsSaved, 
          DeleteSavedCardById,
-         SavedCartIntoBD } from './functions/product.functions';
+         SavedCartIntoBD,
+         LoginUser,
+         RegisterUser } 
+from './functions/product.functions';
 
 import Swal from 'sweetalert2';
-import type { CartCreate } from './models/model';
+import type { CartCreate, CreateUser, LoginDTO } from './models/model';
+
+type View = 'login' | 'register' | 'shop';
 
 export default function App() {
   const [products,setProducts]=useState<Product[]>();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [savedCarts, setSavedCarts] = useState<SavedCart[]>([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [currentView, setCurrentView] = useState<View>('login');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
 
 
   useEffect(() => {
@@ -23,7 +33,7 @@ export default function App() {
   }, [cart]);
 
   useEffect(()=> {
-
+    if (!isAuthenticated) return;
     const storedCart = localStorage.getItem("cart");
     if (storedCart) {
       setCart(JSON.parse(storedCart));
@@ -32,7 +42,7 @@ export default function App() {
       try{
         const [productRes, savedCartRes]=await Promise.all([
           GetAllProducts(),
-          GetAllCartsSaved()
+          GetAllMyCartsSaved()
         ]);
 
         setProducts(productRes ?? []);
@@ -46,10 +56,96 @@ export default function App() {
       }
     }
     fetchData();
-  },[]);
+  },[isAuthenticated]);
 
 
-  
+  const handleLogin =async (email: string, password: string) => {
+
+    if(!email || !password){
+      Swal.fire('error','debes de digitar los campos de email y password','error');
+      return ;
+    }
+
+    try{
+      const dto:LoginDTO={
+        email:email,
+        password:password
+      }
+
+      const response=await LoginUser(dto);
+      if(!response){
+        return ;
+      }
+
+      localStorage.setItem('token',response.token);
+      localStorage.setItem('email',response.email);
+
+      // Aquí se llamaría al backend con el LoginDTO
+      console.log('Login:', { email, password });
+      setIsAuthenticated(true);
+      setCurrentView('shop');
+
+    }catch(error:any){
+      Swal.fire('error',`ha ocurrido un error inesperado ${error.message}`,'error');
+      return ;
+    }
+    
+  };
+
+  const handleRegister = async (name: string, email: string, password: string) => {
+
+    if (!name || !email || !password) {
+      Swal.fire(
+        'Campos requeridos',
+        'Nombre, email y contraseña son obligatorios',
+        'warning'
+      );
+      return;
+    }
+
+    try{
+      const dto:CreateUser={
+        name:name,
+        email:email,
+        password:password
+      };
+
+      const response=await RegisterUser(dto);
+      if(!response){
+        return ;
+      }
+
+      Swal.fire(
+        'Registro exitoso',
+        'Ahora puedes iniciar sesión',
+        'success'
+      );
+
+      setCurrentView('login');
+
+    }catch(error:any){
+      Swal.fire('error',`ha ocurrido un error inesperado ${error.message}`,'error');
+      return;
+    }
+    
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('email');
+    localStorage.removeItem('cart');
+
+    setCart([]);
+    setIsAuthenticated(false);
+    setCurrentView('login');
+
+    Swal.fire(
+      'Sesión cerrada',
+      'Has cerrado sesión correctamente',
+      'info'
+    );
+  };
+
 
   const handleAddToCart = (product: Product) => {
     const existingItem = cart.find(item => item.id === product.id);
@@ -99,7 +195,7 @@ export default function App() {
         return;
       }
 
-      const updatedCartSaved=await GetAllCartsSaved();
+      const updatedCartSaved=await GetAllMyCartsSaved();
       setSavedCarts(updatedCartSaved ?? []);
 
       setCart([]);
@@ -134,6 +230,26 @@ export default function App() {
     
   };
 
+  // Renderizar vista de Login
+  if (currentView === 'login') {
+    return (
+      <Login
+        onLogin={handleLogin}
+        onNavigateToRegister={() => setCurrentView('register')}
+      />
+    );
+  }
+
+  // Renderizar vista de Registro
+  if (currentView === 'register') {
+    return (
+      <Register
+        onRegister={handleRegister}
+        onNavigateToLogin={() => setCurrentView('login')}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <ConfirmationMessage show={showConfirmation} />
@@ -142,6 +258,12 @@ export default function App() {
         <h1 className="text-4xl mb-8 text-center text-gray-800">
           Mini Ecommerce
         </h1>
+        <button
+          onClick={handleLogout}
+            className="bg-red-600 text-white py-2 px-6 rounded-lg hover:bg-red-700 transition-colors"
+        >
+            Cerrar Sesión
+        </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Columna izquierda: Productos */}

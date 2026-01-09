@@ -4,4 +4,26 @@ const api=axios.create({
     baseURL:import.meta.env.VITE_API_URL
 })
 
+// 🔥 Interceptor de solicitud
+api.interceptors.request.use(
+  (config) => {
+
+    // Si la petición dice skipAuth, NO ponemos token
+    if (config.headers?.skipAuth) {
+      delete config.headers.Authorization;
+      return config;
+    }
+
+    // Si NO tiene skipAuth, agregamos token
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+
 export default api;

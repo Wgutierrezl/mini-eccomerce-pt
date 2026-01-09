@@ -8,8 +8,8 @@ class CartService:
     def __init__(self):
         self.repository = CartRepository()
 
-    def create_cart(self, db: Session, data: CartCreate):
-        cart = self.repository.create_cart(db)
+    def create_cart(self, db: Session, data: CartCreate, userId: int):
+        cart = self.repository.create_cart(db,userId=userId)
 
         for item in data.items:
             cart_item = CartItem(
@@ -29,6 +29,9 @@ class CartService:
 
     def get_all(self, db: Session):
         return self.repository.get_all(db)
+    
+    def get_all_my_carts(self, db: Session, userId : int):
+        return self.repository.get_all_my_carts(db,userId)
 
     def get_by_id(self, db: Session, cart_id: int):
         return self.repository.get_by_id(db, cart_id)

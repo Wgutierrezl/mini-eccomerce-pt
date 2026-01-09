@@ -6,6 +6,7 @@ class Cart(Base):
     __tablename__ = "carts"
 
     id = Column(Integer, primary_key=True, index=True)
+    userId = Column(Integer, ForeignKey("users.userId"))
     items = relationship("CartItem", back_populates="cart", cascade="all, delete")
 
 
