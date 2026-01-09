@@ -393,4 +393,4 @@ Desarrollado por **Walter Ernesto Gutiérrez Londoño** como prueba técnica Ful
 
 ## 📄 Licencia
 
-Este proyecto es de código abierto y está disponible para fines educativos y de evaluación técnica.
+Este proyecto es de código abierto y está disponible para fines educativos y de evaluación técnica
