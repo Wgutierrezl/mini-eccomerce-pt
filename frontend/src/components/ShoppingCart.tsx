@@ -16,11 +16,12 @@ export interface CartItem {
 interface ShoppingCartProps {
   items: CartItem[];
   onUpdateQuantity: (id: number, quantity: number) => void;
+  handleRestartQuantity: () => void,
   onRemoveItem: (id: number) => void;
   onSaveCart: () => void;
 }
 
-export function ShoppingCart({ items, onUpdateQuantity, onRemoveItem, onSaveCart }: ShoppingCartProps) {
+export function ShoppingCart({ items, onUpdateQuantity, handleRestartQuantity, onRemoveItem, onSaveCart }: ShoppingCartProps) {
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
@@ -83,6 +84,13 @@ export function ShoppingCart({ items, onUpdateQuantity, onRemoveItem, onSaveCart
           >
             <Save size={20} />
             Guardar carrito
+          </button>
+          <button
+            onClick={handleRestartQuantity}
+            className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <Save size={20} />
+            Restar cantidad
           </button>
         </>
       )}

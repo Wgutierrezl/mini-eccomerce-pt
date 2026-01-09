@@ -173,6 +173,15 @@ export default function App() {
     ));
   };
 
+
+  const handleRestartQuantity=()=> {
+    setCart(cart.map(x=> {
+        return x = {
+          ...x, quantity: x.quantity-1
+        };
+    }))
+  };
+
   const handleRemoveItem = (id: number) => {
     setCart(cart.filter(item => item.id !== id));
   };
@@ -285,6 +294,7 @@ export default function App() {
               <ShoppingCart
                 items={cart}
                 onUpdateQuantity={handleUpdateQuantity}
+                handleRestartQuantity={handleRestartQuantity}
                 onRemoveItem={handleRemoveItem}
                 onSaveCart={handleSaveCart}
               />
